@@ -1,108 +1,19 @@
 import { useState, useCallback } from 'react';
-
-// ===== スタイル定義 =====
-const S = {
-  header: { background:'#0d1b2a', color:'#fff', position:'sticky', top:0, zIndex:100, borderBottom:'2px solid #c9a84c', padding:'12px 28px', display:'flex', alignItems:'center', justifyContent:'space-between' },
-  logoMark: { width:40, height:40, background:'#c9a84c', borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', fontWeight:700, fontSize:18, color:'#0d1b2a', marginRight:14 },
-  layout: { display:'grid', gridTemplateColumns:'220px 1fr', minHeight:'calc(100vh - 68px)' },
-  sidebar: { background:'#1b2d42', padding:'16px 0', position:'sticky', top:68, height:'calc(100vh - 68px)', overflowY:'auto' },
-  sitem: (active) => ({ display:'block', padding:'8px 16px', color: active ? '#4a90c4' : '#8faacc', cursor:'pointer', fontSize:12, borderLeft: active ? '3px solid #4a90c4' : '3px solid transparent', background: active ? 'rgba(74,144,196,.15)' : 'transparent', transition:'all .15s' }),
-  main: { padding:'24px 32px', maxWidth:1100 },
-  secH: { fontSize:19, fontWeight:700, color:'#0d1b2a', borderBottom:'2px solid #2c4a6e', paddingBottom:8, marginBottom:6, display:'flex', alignItems:'center', gap:10 },
-  num: { background:'#2c4a6e', color:'#fff', width:26, height:26, borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:700 },
-  card: { background:'#fff', border:'1px solid #ccd9e8', borderRadius:8, marginBottom:16 },
-  cardHd: { background:'#e8f0f8', padding:'9px 16px', fontWeight:700, fontSize:13, color:'#1b2d42', borderBottom:'1px solid #ccd9e8', display:'flex', alignItems:'center', gap:8 },
-  cardBody: { padding:16 },
-  row: { display:'grid', gap:12, marginBottom:12 },
-  fg: { display:'flex', flexDirection:'column', gap:3 },
-  label: { fontSize:10, fontWeight:700, color:'#5a7290', letterSpacing:'.05em', textTransform:'uppercase' },
-  input: { border:'1px solid #ccd9e8', borderRadius:5, padding:'7px 10px', fontSize:12, fontFamily:'inherit', color:'#1a2535', background:'#fafcff', outline:'none' },
-  textarea: { border:'1px solid #ccd9e8', borderRadius:5, padding:'7px 10px', fontSize:12, fontFamily:'inherit', color:'#1a2535', background:'#fafcff', outline:'none', resize:'vertical', minHeight:60 },
-  select: { border:'1px solid #ccd9e8', borderRadius:5, padding:'7px 10px', fontSize:12, fontFamily:'inherit', color:'#1a2535', background:'#fafcff', outline:'none' },
-  etbl: { width:'100%', borderCollapse:'collapse', fontSize:12, marginBottom:6 },
-  th: { background:'#eaf0f8', border:'1px solid #b0c4d8', padding:'6px 8px', fontWeight:700, color:'#1b2d42', textAlign:'center' },
-  td: { border:'1px solid #c8d8e8', padding:2 },
-  tinput: { width:'100%', border:'none', padding:'5px 6px', fontSize:11, fontFamily:'inherit', background:'transparent', outline:'none' },
-  srTd: { border:'1px solid #c8d8e8', padding:'5px 8px', background:'#0d1b2a', color:'#fff', fontWeight:700, fontSize:11 },
-  totTd: { border:'1px solid #c8d8e8', padding:'5px 8px', background:'#e8f4ec', fontWeight:700, fontSize:11 },
-  addBtn: { background:'none', border:'1px dashed #ccd9e8', color:'#5a7290', padding:'4px 12px', borderRadius:4, cursor:'pointer', fontSize:11, fontFamily:'inherit', marginRight:6 },
-  navAct: { display:'flex', justifyContent:'space-between', marginTop:14, marginBottom:80 },
-  btnNav: { background:'#fff', border:'1px solid #ccd9e8', padding:'8px 20px', borderRadius:6, cursor:'pointer', fontFamily:'inherit', fontSize:12, color:'#2c4a6e' },
-  bbar: { position:'fixed', bottom:0, left:0, right:0, background:'#0d1b2a', borderTop:'2px solid #c9a84c', padding:'11px 28px', display:'flex', alignItems:'center', justifyContent:'space-between', zIndex:100 },
-  btnGen: (loading) => ({ background: loading ? '#a07820' : '#c9a84c', color:'#0d1b2a', border:'none', padding:'10px 26px', borderRadius:6, fontWeight:700, fontSize:13, fontFamily:'inherit', cursor: loading ? 'not-allowed' : 'pointer' }),
-  toast: (show, err) => ({ position:'fixed', top:80, right:20, background: err ? '#c0392b' : '#2e7d52', color:'#fff', padding:'10px 16px', borderRadius:8, fontSize:12, fontWeight:700, opacity: show ? 1 : 0, transition:'all .3s', zIndex:200, pointerEvents:'none' }),
-  note: { background:'#fff8e6', border:'1px solid #f0d060', borderLeft:'4px solid #c9a84c', borderRadius:4, padding:'7px 12px', fontSize:11, color:'#7a6020', marginBottom:12 },
-};
+import { S, EditTable, FG, Input, Sel, TA, Card, Row } from '../components/FormUI';
+import ElectricalApp from '../components/ElectricalApp';
+import EngineApp from '../components/EngineApp';
 
 const SECS = ['表紙','一般計画','保証事項','主要要目','各部の仕様①','各部の仕様②','各部の仕様③','確認・生成'];
 
-// ===== 編集可テーブルコンポーネント =====
-function EditTable({ cols, rows, onRowsChange, sectionable }) {
-  const addRow = (type='normal') => onRowsChange([...rows, { type, cells: cols.map(() => '') }]);
-  const delRow = (i) => onRowsChange(rows.filter((_,idx) => idx !== i));
-  const setCell = (ri, ci, v) => {
-    const next = rows.map((r,idx) => idx===ri ? {...r, cells: r.cells.map((c,ci2) => ci2===ci ? v : c)} : r);
-    onRowsChange(next);
-  };
-  const setSecLabel = (ri, v) => {
-    const next = rows.map((r,idx) => idx===ri ? {...r, label:v} : r);
-    onRowsChange(next);
-  };
-  return (
-    <div>
-      <table style={S.etbl}>
-        <thead><tr>{cols.map(c=><th key={c} style={S.th}>{c}</th>)}<th style={{...S.th,width:32}}></th></tr></thead>
-        <tbody>
-          {rows.map((row,ri) => row.type==='section' ? (
-            <tr key={ri}>
-              <td colSpan={cols.length} style={S.srTd}>
-                <input style={{...S.tinput, color:'#fff', background:'transparent', fontWeight:700}} value={row.label||''} onChange={e=>setSecLabel(ri,e.target.value)} />
-              </td>
-              <td style={{...S.td, textAlign:'center'}}><button style={{background:'none',border:'none',cursor:'pointer',color:'#cc4444',fontSize:13}} onClick={()=>delRow(ri)}>✕</button></td>
-            </tr>
-          ) : row.type==='total' ? (
-            <tr key={ri}>
-              {(row.cells||[]).map((c,ci)=><td key={ci} style={{...S.td, background:'#e8f4ec', padding:0}}><input style={{...S.tinput, fontWeight:700}} value={c} onChange={e=>setCell(ri,ci,e.target.value)} /></td>)}
-              <td style={{...S.td, textAlign:'center'}}><button style={{background:'none',border:'none',cursor:'pointer',color:'#cc4444',fontSize:13}} onClick={()=>delRow(ri)}>✕</button></td>
-            </tr>
-          ) : (
-            <tr key={ri}>
-              {(row.cells||[]).map((c,ci)=><td key={ci} style={S.td}><input style={S.tinput} value={c} onChange={e=>setCell(ri,ci,e.target.value)} /></td>)}
-              <td style={{...S.td, textAlign:'center'}}><button style={{background:'none',border:'none',cursor:'pointer',color:'#cc4444',fontSize:13}} onClick={()=>delRow(ri)}>✕</button></td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <div>
-        <button style={S.addBtn} onClick={()=>addRow('normal')}>＋ 行追加</button>
-        {sectionable && <><button style={{...S.addBtn, borderColor:'#888', color:'#555'}} onClick={()=>addRow('section')}>＋ 見出し行</button>
-        <button style={{...S.addBtn, borderColor:'#2e7d52', color:'#2e7d52'}} onClick={()=>addRow('total')}>＋ 合計行</button></>}
-      </div>
-    </div>
-  );
-}
-
-function FG({ label, children }) {
-  return <div style={S.fg}><label style={S.label}>{label}</label>{children}</div>;
-}
-function Input({ id, value, onChange, placeholder }) {
-  return <input id={id} style={S.input} value={value||''} onChange={e=>onChange(e.target.value)} placeholder={placeholder||''} />;
-}
-function Sel({ value, onChange, options }) {
-  return <select style={S.select} value={value||''} onChange={e=>onChange(e.target.value)}>{options.map(o=><option key={o.v||o} value={o.v||o}>{o.l||o}</option>)}</select>;
-}
-function TA({ value, onChange, placeholder, rows=3 }) {
-  return <textarea style={S.textarea} rows={rows} value={value||''} onChange={e=>onChange(e.target.value)} placeholder={placeholder||''} />;
-}
-function Card({ title, children }) {
-  return <div style={S.card}><div style={S.cardHd}><span style={{width:4,height:14,background:'#4a90c4',borderRadius:2,display:'inline-block',marginRight:4}}></span>{title}</div><div style={S.cardBody}>{children}</div></div>;
-}
-function Row({ cols=2, children }) {
-  return <div style={{...S.row, gridTemplateColumns: Array(cols).fill('1fr').join(' ')}}>{children}</div>;
-}
+const DOC_TABS = [
+  { key:'hull', label:'①船体部仕様書' },
+  { key:'electrical', label:'②電気部仕様書' },
+  { key:'engine', label:'③機関部仕様書' },
+];
 
 // ===== メインページ =====
 export default function Home() {
+  const [docType, setDocType] = useState('hull');
   const [cur, setCur] = useState(0);
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState({ show:false, msg:'', err:false });
@@ -321,16 +232,25 @@ export default function Home() {
           <div style={S.logoMark}>鈴</div>
           <div>
             <div style={{fontSize:15,fontWeight:700,letterSpacing:'.1em'}}>鈴木造船株式会社</div>
-            <div style={{fontSize:10,color:'#8faacc',letterSpacing:'.15em'}}>船体部仕様書作成システム</div>
+            <div style={{fontSize:10,color:'#a8c4ea',letterSpacing:'.15em'}}>仕様書作成システム</div>
           </div>
+        </div>
+        <div>
+          {DOC_TABS.map(t => (
+            <span key={t.key} className="doc-tab" style={S.navTab(docType===t.key)} onClick={()=>setDocType(t.key)}>{t.label}</span>
+          ))}
         </div>
       </header>
 
+      {docType === 'electrical' && <ElectricalApp />}
+      {docType === 'engine' && <EngineApp />}
+
+      {docType === 'hull' && <>
       <div style={S.layout}>
         {/* サイドバー */}
         <aside style={S.sidebar}>
           <div style={{fontSize:9,color:'#5a7a9a',padding:'0 14px 8px',letterSpacing:'.2em',textTransform:'uppercase',borderBottom:'1px solid rgba(255,255,255,.06)',marginBottom:4}}>章一覧</div>
-          {SECS.map((s,i)=><div key={i} style={S.sitem(cur===i)} onClick={()=>goto(i)}>{s}</div>)}
+          {SECS.map((s,i)=><div key={i} className="sb-item" style={S.sitem(cur===i)} onClick={()=>goto(i)}>{s}</div>)}
         </aside>
 
         <main style={S.main}>
@@ -338,7 +258,7 @@ export default function Home() {
           {/* ===== 0: 表紙 ===== */}
           {cur===0 && <div>
             <div style={S.secH}><span style={S.num}>表</span>表紙情報</div>
-            <p style={{fontSize:11,color:'#5a7290',marginBottom:16}}>仕様書表紙に記載する基本情報を入力してください。</p>
+            <p style={{fontSize:11,color:'#6b7280',marginBottom:16}}>仕様書表紙に記載する基本情報を入力してください。</p>
             <Card title="基本情報">
               <Row><FG label="船名"><Input value={d.ship_name} onChange={set('ship_name')} placeholder="例：第○○鈴木丸" /></FG>
               <FG label="船種"><Sel value={d.ship_type} onChange={set('ship_type')} options={['油タンカー','ケミカルタンカー','液体化学薬品ばら積船 兼 油タンカー','貨物船',{v:'other',l:'その他（直接入力）'}]} /></FG></Row>
@@ -348,7 +268,7 @@ export default function Home() {
               <Row><FG label="改訂番号"><Input value={d.rev_no} onChange={set('rev_no')} /></FG>
               <FG label="造船所名"><Input value={d.shipyard} onChange={set('shipyard')} /></FG></Row>
             </Card>
-            <div style={S.navAct}><div /><button style={S.btnNav} onClick={()=>goto(1)}>次へ →</button></div>
+            <div style={S.navAct}><div /><button className="btn-nav" style={S.btnNav} onClick={()=>goto(1)}>次へ →</button></div>
           </div>}
 
           {/* ===== 1: 一般計画 ===== */}
@@ -374,7 +294,7 @@ export default function Home() {
               <FG label="主機関詳細（一般計画記載用）"><Input value={d.plan_engine_detail} onChange={set('plan_engine_detail')} placeholder="例：単動４サイクル…メーカー：㈱赤阪鉄工所　ＡＸ３３ＢＲ　１４７１ＫＷ" /></FG></Row>
               <Row cols={1}><FG label="本船計画の基本方針（本文追記）"><TA value={d.plan_body_desc} onChange={set('plan_body_desc')} /></FG></Row>
             </Card>
-            <div style={S.navAct}><button style={S.btnNav} onClick={()=>goto(0)}>← 前へ</button><button style={S.btnNav} onClick={()=>goto(2)}>次へ →</button></div>
+            <div style={S.navAct}><button className="btn-nav" style={S.btnNav} onClick={()=>goto(0)}>← 前へ</button><button className="btn-nav" style={S.btnNav} onClick={()=>goto(2)}>次へ →</button></div>
           </div>}
 
           {/* ===== 2: 保証事項 ===== */}
@@ -384,7 +304,7 @@ export default function Home() {
               <Row><FG label="貨物容積（m³以上）"><Input value={d.gvol} onChange={set('gvol')} placeholder="例：２１８０" /></FG>
               <FG label="試運転最高速力の条件"><Input value={d.gspeed} onChange={set('gspeed')} placeholder="例：主機関連続最大回転数２８０ｍｉｎ⁻¹、満載状態にて１１．００ノット" /></FG></Row>
             </Card>
-            <div style={S.navAct}><button style={S.btnNav} onClick={()=>goto(1)}>← 前へ</button><button style={S.btnNav} onClick={()=>goto(3)}>次へ →</button></div>
+            <div style={S.navAct}><button className="btn-nav" style={S.btnNav} onClick={()=>goto(1)}>← 前へ</button><button className="btn-nav" style={S.btnNav} onClick={()=>goto(3)}>次へ →</button></div>
           </div>}
 
           {/* ===== 3: 主要要目 ===== */}
@@ -434,7 +354,7 @@ export default function Home() {
               <Row><FG label="その他の者（人数）"><Input value={d.crew_other} onChange={set('crew_other')} /></FG>
               <FG label="最大搭載人員"><Input value={d.crew_max} onChange={set('crew_max')} /></FG></Row>
             </Card>
-            <div style={S.navAct}><button style={S.btnNav} onClick={()=>goto(2)}>← 前へ</button><button style={S.btnNav} onClick={()=>goto(4)}>次へ →</button></div>
+            <div style={S.navAct}><button className="btn-nav" style={S.btnNav} onClick={()=>goto(2)}>← 前へ</button><button className="btn-nav" style={S.btnNav} onClick={()=>goto(4)}>次へ →</button></div>
           </div>}
 
           {/* ===== 4: 各部の仕様① ===== */}
@@ -452,10 +372,10 @@ export default function Home() {
             <Card title="(7) 揚錨及び係船器具">
               <EditTable cols={['項目','位置','数','型式','力量等','備考']} rows={anchRows} onRowsChange={setAnchRows} />
               <div style={{height:12}} />
-              <div style={{fontWeight:700,fontSize:12,color:'#1b2d42',marginBottom:6}}>■ 係船器具明細</div>
+              <div style={{fontWeight:700,fontSize:12,color:'#16304d',marginBottom:6}}>■ 係船器具明細</div>
               <EditTable cols={['区分','取付位置','名称','数','寸法','材質','備考']} rows={keisRows} onRowsChange={setKeisRows} sectionable />
               <div style={{height:12}} />
-              <div style={{fontWeight:700,fontSize:12,color:'#1b2d42',marginBottom:6}}>■ 船首ホースパイプ・チェーンパイプ</div>
+              <div style={{fontWeight:700,fontSize:12,color:'#16304d',marginBottom:6}}>■ 船首ホースパイプ・チェーンパイプ</div>
               <EditTable cols={['項目','本体','ベルマウス','デッキピース','数']} rows={hoseRows} onRowsChange={setHoseRows} />
             </Card>
             <Card title="(8) 操舵装置">
@@ -482,12 +402,12 @@ export default function Home() {
               <Row cols={1}><FG label="構造"><Input value={d.pump_struct} onChange={set('pump_struct')} /></FG></Row>
               <Row cols={1}><FG label="材質"><Input value={d.pump_mat} onChange={set('pump_mat')} /></FG></Row>
               <Row cols={1}><FG label="駆動方式"><TA value={d.pump_drive} onChange={set('pump_drive')} rows={2} /></FG></Row>
-              <div style={{fontWeight:700,fontSize:12,color:'#1b2d42',margin:'12px 0 6px'}}>■ バルブ材質</div>
+              <div style={{fontWeight:700,fontSize:12,color:'#16304d',margin:'12px 0 6px'}}>■ バルブ材質</div>
               <EditTable cols={['種別','本体（弁箱）','弁体','圧力']} rows={valvRows} onRowsChange={setValvRows} />
-              <div style={{fontWeight:700,fontSize:12,color:'#1b2d42',margin:'12px 0 6px'}}>■ 荷役関連ポンプ等</div>
+              <div style={{fontWeight:700,fontSize:12,color:'#16304d',margin:'12px 0 6px'}}>■ 荷役関連ポンプ等</div>
               <EditTable cols={['機器名称','仕様・メーカー']} rows={pumpRows} onRowsChange={setPumpRows} />
             </Card>
-            <div style={S.navAct}><button style={S.btnNav} onClick={()=>goto(3)}>← 前へ</button><button style={S.btnNav} onClick={()=>goto(5)}>次へ →</button></div>
+            <div style={S.navAct}><button className="btn-nav" style={S.btnNav} onClick={()=>goto(3)}>← 前へ</button><button className="btn-nav" style={S.btnNav} onClick={()=>goto(5)}>次へ →</button></div>
           </div>}
 
           {/* ===== 5: 各部の仕様② ===== */}
@@ -495,16 +415,16 @@ export default function Home() {
             <div style={S.secH}><span style={S.num}>４②</span>各部の仕様（居住区・通風・照明・諸管・消火・倉庫）</div>
             <Card title="(10) 船内居住区設備等">
               <div style={S.note}>船種・居室構成に応じて行の追加・削除が可能です。列（船室名）はテンプレート固定です。</div>
-              <div style={{fontWeight:700,fontSize:12,color:'#1b2d42',marginBottom:6}}>■ 居室・共用室 設備（Ⅰ）：船長室／機関長室／士官室×2／船員室×4／荷役監視室兼事務室</div>
+              <div style={{fontWeight:700,fontSize:12,color:'#16304d',marginBottom:6}}>■ 居室・共用室 設備（Ⅰ）：船長室／機関長室／士官室×2／船員室×4／荷役監視室兼事務室</div>
               <EditTable cols={['設備項目','船長室','機関長室','士官室×2','船員室×4','荷役監視室兼事務室']} rows={roomRows1} onRowsChange={setRoomRows1} sectionable />
               <div style={{height:12}} />
-              <div style={{fontWeight:700,fontSize:12,color:'#1b2d42',marginBottom:6}}>■ 居室・共用室 設備（Ⅱ）：操舵室／娯楽室／食堂／賄室</div>
+              <div style={{fontWeight:700,fontSize:12,color:'#16304d',marginBottom:6}}>■ 居室・共用室 設備（Ⅱ）：操舵室／娯楽室／食堂／賄室</div>
               <EditTable cols={['設備項目','操舵室','娯楽室','食堂','賄室']} rows={roomRows2} onRowsChange={setRoomRows2} sectionable />
               <div style={{height:12}} />
-              <div style={{fontWeight:700,fontSize:12,color:'#1b2d42',marginBottom:6}}>■ 水廻り室 設備：浴室／便所／洗濯室・脱衣場／シャワー室</div>
+              <div style={{fontWeight:700,fontSize:12,color:'#16304d',marginBottom:6}}>■ 水廻り室 設備：浴室／便所／洗濯室・脱衣場／シャワー室</div>
               <EditTable cols={['設備項目','浴室','便所','洗濯室・脱衣場','シャワー室']} rows={waterRows} onRowsChange={setWaterRows} sectionable />
               <div style={{height:12}} />
-              <div style={{fontWeight:700,fontSize:12,color:'#1b2d42',marginBottom:6}}>■ 防熱・防音工事</div>
+              <div style={{fontWeight:700,fontSize:12,color:'#16304d',marginBottom:6}}>■ 防熱・防音工事</div>
               <EditTable cols={['No.','施工場所','構造','備考']} rows={insulRows} onRowsChange={setInsulRows} />
             </Card>
             <Card title="(13) 通風採光装置">
@@ -519,7 +439,7 @@ export default function Home() {
             </Card>
             <Card title="(17) 消火装置 ■ 消火機器一覧">
               <EditTable cols={['名称','容量','数','設置場所','備考']} rows={fireRows} onRowsChange={setFireRows} />
-              <div style={{fontWeight:700,fontSize:12,color:'#1b2d42',margin:'12px 0 6px'}}>■ ガス検知器・感知器</div>
+              <div style={{fontWeight:700,fontSize:12,color:'#16304d',margin:'12px 0 6px'}}>■ ガス検知器・感知器</div>
               <EditTable cols={['名称','型式','数','設置場所']} rows={gasRows} onRowsChange={setGasRows} />
             </Card>
             <Card title="(16) 諸管装置 ■ 配管仕様一覧">
@@ -529,7 +449,7 @@ export default function Home() {
               <Row cols={1}><FG label="船舶防食装置"><TA value={d.zinc_main} onChange={set('zinc_main')} rows={2} /></FG></Row>
               <Row cols={1}><FG label="海洋生物付着防止装置"><Input value={d.zinc_bio} onChange={set('zinc_bio')} /></FG></Row>
             </Card>
-            <div style={S.navAct}><button style={S.btnNav} onClick={()=>goto(4)}>← 前へ</button><button style={S.btnNav} onClick={()=>goto(6)}>次へ →</button></div>
+            <div style={S.navAct}><button className="btn-nav" style={S.btnNav} onClick={()=>goto(4)}>← 前へ</button><button className="btn-nav" style={S.btnNav} onClick={()=>goto(6)}>次へ →</button></div>
           </div>}
 
           {/* ===== 6: 各部の仕様③ ===== */}
@@ -546,7 +466,7 @@ export default function Home() {
               <div style={S.note}>錨・錨鎖、航海用具、船灯、信号旗、倉庫品、備品を一括管理。見出し行で区切れます。</div>
               <EditTable cols={['品名','数量','適用','備考']} rows={zokuRows} onRowsChange={setZokuRows} sectionable />
             </Card>
-            <div style={S.navAct}><button style={S.btnNav} onClick={()=>goto(5)}>← 前へ</button><button style={S.btnNav} onClick={()=>goto(7)}>確認・生成 →</button></div>
+            <div style={S.navAct}><button className="btn-nav" style={S.btnNav} onClick={()=>goto(5)}>← 前へ</button><button className="btn-nav" style={S.btnNav} onClick={()=>goto(7)}>確認・生成 →</button></div>
           </div>}
 
           {/* ===== 7: 確認・生成 ===== */}
@@ -565,12 +485,12 @@ export default function Home() {
               </table>
             </Card>
             <div style={{textAlign:'center',margin:'28px 0 12px'}}>
-              <button style={{...S.btnGen(loading), fontSize:15, padding:'14px 44px', display:'inline-flex', alignItems:'center', gap:8}} onClick={generate} disabled={loading}>
+              <button className="btn-gen" style={{...S.btnGen(loading), fontSize:15, padding:'14px 44px', display:'inline-flex', alignItems:'center', gap:8}} onClick={generate} disabled={loading}>
                 {loading ? '⏳ 生成中...' : '📄 Word仕様書を生成・ダウンロード'}
               </button>
               <p style={{marginTop:10,fontSize:11,color:'#888'}}>ボタンを押すと自動でダウンロードが始まります</p>
             </div>
-            <div style={S.navAct}><button style={S.btnNav} onClick={()=>goto(6)}>← 前へ</button><div /></div>
+            <div style={S.navAct}><button className="btn-nav" style={S.btnNav} onClick={()=>goto(6)}>← 前へ</button><div /></div>
           </div>}
 
         </main>
@@ -578,12 +498,13 @@ export default function Home() {
 
       {/* ボトムバー */}
       <div style={S.bbar}>
-        <div style={{color:'#8faacc',fontSize:12}}>{SECS[cur]} — {cur+1}/{SECS.length}</div>
+        <div style={{color:'#a8c4ea',fontSize:12}}>{SECS[cur]} — {cur+1}/{SECS.length}</div>
         <div style={{flex:1,maxWidth:240,height:4,background:'rgba(255,255,255,.1)',borderRadius:2,margin:'0 14px'}}>
-          <div style={{width:`${Math.round((cur+1)/SECS.length*100)}%`,height:'100%',background:'#c9a84c',borderRadius:2,transition:'width .3s'}} />
+          <div style={{width:`${Math.round((cur+1)/SECS.length*100)}%`,height:'100%',background:'#2f6fed',borderRadius:2,transition:'width .3s'}} />
         </div>
-        <button style={S.btnGen(loading)} onClick={generate} disabled={loading}>📄 Word生成</button>
+        <button className="btn-gen" style={S.btnGen(loading)} onClick={generate} disabled={loading}>📄 Word生成</button>
       </div>
+      </>}
     </>
   );
 }
