@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { S, EditTable, FG, Input, Sel, TA, Card, Row } from './FormUI';
 
-const SECS = ['表紙','一般・配線','電源装置','確認・生成'];
+const SECS = ['表紙','一般・配線','電源装置','配電装置','動力装置','小形電気機器・航海灯','照明電灯装置','船内通信・計器①','船内通信・計器②','無線装置','自動化・備品・塗装','試験・図書','確認・生成'];
 
+// ===== 初期データ =====
 const initGenRows = [
   {type:'normal',cells:['種別','三相交流同期発電機','三相交流同期発電機']},
   {type:'normal',cells:['出力','','']},
@@ -71,6 +72,122 @@ const initRouteRows = [
   {type:'normal',cells:['10','各分電盤に予備のブレーカーを設備する。']},
 ];
 
+// 4章: 配電装置
+const initChargerRows = [
+  {type:'normal',cells:['形式','シリコン整流器式']},
+  {type:'normal',cells:['入力電圧','ＡＣ 440Ｖ 1φ 60Hz']},
+  {type:'normal',cells:['出力電圧','ＤＣ 22Ｖ〜32Ｖ']},
+  {type:'normal',cells:['充電電流','40Ａ']},
+  {type:'normal',cells:['充電方式','浮動充電']},
+];
+
+// 5章: 動力装置 - 電動機要目表
+const initMotorRows = [
+  {type:'normal',cells:['主空気圧縮機','２','440','5.5','6','連続','全閉外扇','全電圧','AST']},
+  {type:'normal',cells:['消防兼ビルジポンプ','２','440','22','4','連続','全閉外扇','スターデルタ','LSW,RSW']},
+  {type:'normal',cells:['','','','','','','','','']},
+  {type:'normal',cells:['','','','','','','','','']},
+  {type:'normal',cells:['','','','','','','','','']},
+  {type:'normal',cells:['','','','','','','','','']},
+  {type:'normal',cells:['','','','','','','','','']},
+  {type:'normal',cells:['','','','','','','','','']},
+];
+
+// 5章: 集合始動器盤組込補機リスト
+const initStarterRows = [
+  {type:'normal',cells:['１）主空気圧縮機×２','１１）機関室通風機×２']},
+  {type:'normal',cells:['２）消防兼ビルジポンプ×２','１２）スラッジポンプ']},
+  {type:'normal',cells:['３）冷却海水ポンプ','１３）ガスフリーファン×２']},
+  {type:'normal',cells:['４）低温冷却清水ポンプ×２','１４）残油ポンプ×２']},
+  {type:'normal',cells:['５）高温冷却清水ポンプ×２','１５）バラストポンプ']},
+  {type:'normal',cells:['６）予備潤滑油ポンプ','１６）ポンプ室排風機']},
+  {type:'normal',cells:['','']},
+  {type:'normal',cells:['','']},
+];
+
+// 6章: 小形電気機器
+const initSmallEquipRows = [
+  {type:'normal',cells:['電気冷凍冷蔵庫','２','320Ｌ','賄室']},
+  {type:'normal',cells:['電気冷凍冷蔵庫','１','320Ｌ','食堂']},
+  {type:'normal',cells:['電気冷蔵庫','４','100Ｌ','船長・機関長室・一航・一機']},
+  {type:'normal',cells:['電気冷蔵庫','４','47Ｌ','船員室']},
+  {type:'normal',cells:['電子レンジ','１','','賄室']},
+  {type:'normal',cells:['','','','']},
+  {type:'normal',cells:['','','','']},
+  {type:'normal',cells:['','','','']},
+  {type:'normal',cells:['','','','']},
+  {type:'normal',cells:['','','','']},
+];
+
+// 7章: 航海灯
+const initNavLightRows = [
+  {type:'normal',cells:['マスト灯','ＬＥＤ 第１種２灯式（12W）','ＡＣ／ＤＣ２４Ｖ','２箇']},
+  {type:'normal',cells:['げん灯','ＬＥＤ 第１種２灯式（12W）','ＡＣ／ＤＣ２４Ｖ','１対']},
+  {type:'normal',cells:['船尾灯','ＬＥＤ 第１種２灯式（12W）','ＡＣ／ＤＣ２４Ｖ','１箇']},
+  {type:'normal',cells:['停泊灯','ＬＥＤ 第１種１灯式（12W）','ＡＣ／ＤＣ２４Ｖ','各１箇（船首・船尾）']},
+  {type:'normal',cells:['標識灯（紅灯）','ＬＥＤ（12W）','ＡＣ／ＤＣ２４Ｖ','２個（レーダーマスト）']},
+];
+
+// 8章: 投光器
+const initProjectorRows = [
+  {type:'normal',cells:['操舵室頂部（両舷）','700','２台','ＬＥＤ灯']},
+  {type:'normal',cells:['船首マスト（両舷）','700','２台','ＬＥＤ灯']},
+  {type:'normal',cells:['船首マスト（首向）','300','１台','ＬＥＤ灯']},
+  {type:'normal',cells:['機関室','300','１台','ＬＥＤ灯']},
+];
+
+// 9章: 船内電話
+const initPhoneRows = [
+  {type:'normal',cells:['一般','10台','居室(8)・食堂・荷役監視室兼事務室']},
+  {type:'normal',cells:['両耳防雑','1台','機関室（機関監視室）']},
+  {type:'normal',cells:['埋込','1台','操舵室']},
+];
+
+// 9章: レーダー
+const initRadarRows = [
+  {type:'normal',cells:['No.1','FAR-2028-MARK-2','１台','19インチカラー液晶','25KW','XN-20CF']},
+  {type:'normal',cells:['No.2','FAR-2028-MARK-2BB/MU-192HD','１台','19インチカラー液晶','25KW','XN-20CF']},
+];
+
+// 9章: 船内指令装置スピーカー
+const initSpeakerRows = [
+  {type:'normal',cells:['羅針儀甲板','１個','25W','防水固定形（室内操作）トランペット型']},
+  {type:'normal',cells:['船首部','２個','10W','防水形 移動形']},
+  {type:'normal',cells:['船尾部','１個','10W','防水形']},
+  {type:'normal',cells:['操舵室','１個','3W','非防水形 埋込型 トークバック用']},
+  {type:'normal',cells:['食堂','１個','3W','非防水形 埋込型']},
+  {type:'normal',cells:['内部通路','各１個','3W','非防水形 キャビン型']},
+];
+
+// 9章: テレビ
+const initTvRows = [
+  {type:'normal',cells:['食堂','40インチ カラーTV及びVTR（BS内蔵）','１台']},
+  {type:'normal',cells:['居室（８室）','24インチ カラーTV及びVTR（BS内蔵）','各１台']},
+];
+
+// 10章: GMDSS機器
+const initGmdsRows = [
+  {type:'normal',cells:['ＡＩＳ（自動船舶識別装置）','ＦＡ-170（古野電気㈱）','１台']},
+  {type:'normal',cells:['双方向無線電話装置（トランシーバー）充電器付','ＨＸ600ＵＦＪＩＳ','８台']},
+  {type:'normal',cells:['レーダートランスポンダ','Tron AIS-SART','１台']},
+  {type:'normal',cells:['衛星ＥＰＩＲＢ','Tron60AIS','１台']},
+  {type:'normal',cells:['ナブテックス受信機','ＮＸ-900（古野電気㈱）','１台']},
+];
+
+// 15章: 図書目録
+const initDocListRows = [
+  {type:'normal',cells:['電気部建造仕様書','３','３','１','１']},
+  {type:'normal',cells:['主電路系統図','３','３','１','１']},
+  {type:'normal',cells:['','','','','']},
+  {type:'normal',cells:['','','','','']},
+  {type:'normal',cells:['','','','','']},
+  {type:'normal',cells:['','','','','']},
+  {type:'normal',cells:['','','','','']},
+  {type:'normal',cells:['','','','','']},
+  {type:'normal',cells:['','','','','']},
+  {type:'normal',cells:['','','','','']},
+];
+
 export default function ElectricalApp() {
   const [cur, setCur] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -91,10 +208,30 @@ export default function ElectricalApp() {
   const [voltRows, setVoltRows] = useState(initVoltRows);
   const [wireRows, setWireRows] = useState(initWireRows);
   const [routeRows, setRouteRows] = useState(initRouteRows);
+  const [chargerRows, setChargerRows] = useState(initChargerRows);
+  const [motorRows, setMotorRows] = useState(initMotorRows);
+  const [starterRows, setStarterRows] = useState(initStarterRows);
+  const [smallEquipRows, setSmallEquipRows] = useState(initSmallEquipRows);
+  const [navLightRows, setNavLightRows] = useState(initNavLightRows);
+  const [projectorRows, setProjectorRows] = useState(initProjectorRows);
+  const [phoneRows, setPhoneRows] = useState(initPhoneRows);
+  const [radarRows, setRadarRows] = useState(initRadarRows);
+  const [speakerRows, setSpeakerRows] = useState(initSpeakerRows);
+  const [tvRows, setTvRows] = useState(initTvRows);
+  const [gmdsRows, setGmdsRows] = useState(initGmdsRows);
+  const [docListRows, setDocListRows] = useState(initDocListRows);
 
   const generate = async () => {
     setLoading(true);
-    const payload = { ...d, genRows, genUseRows, battRows, transRows, voltRows, wireRows, routeRows };
+    const payload = {
+      ...d,
+      genRows, genUseRows, battRows, transRows,
+      voltRows, wireRows, routeRows,
+      chargerRows, motorRows, starterRows,
+      smallEquipRows, navLightRows, projectorRows,
+      phoneRows, radarRows, speakerRows, tvRows,
+      gmdsRows, docListRows,
+    };
     try {
       const res = await fetch('/api/generateElectrical', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
       if (!res.ok) throw new Error(await res.text());
@@ -171,10 +308,116 @@ export default function ElectricalApp() {
             <div style={S.navAct}><button className="btn-nav" style={S.btnNav} onClick={()=>goto(1)}>← 前へ</button><button className="btn-nav" style={S.btnNav} onClick={()=>goto(3)}>次へ →</button></div>
           </div>}
 
-          {/* ===== 3: 確認・生成 ===== */}
+          {/* ===== 3: 配電装置 ===== */}
           {cur===3 && <div>
+            <div style={S.secH}><span style={S.num}>４</span>配電装置</div>
+            <div style={S.note}>4-1主配電盤・4-3船外給電箱・4-4分電盤・4-5集合分電盤は定型文です。4-2充放電盤の仕様を編集できます。</div>
+            <Card title="(4-2) 充放電盤仕様">
+              <EditTable cols={['項目','仕様']} rows={chargerRows} onRowsChange={setChargerRows} />
+            </Card>
+            <div style={S.navAct}><button className="btn-nav" style={S.btnNav} onClick={()=>goto(2)}>← 前へ</button><button className="btn-nav" style={S.btnNav} onClick={()=>goto(4)}>次へ →</button></div>
+          </div>}
+
+          {/* ===== 4: 動力装置 ===== */}
+          {cur===4 && <div>
+            <div style={S.secH}><span style={S.num}>５</span>動力装置</div>
+            <div style={S.note}>5-3非常停止装置・5-4自動制御は定型文です。電動機要目表と始動器盤組込補機リストを編集できます。</div>
+            <Card title="(5-1) 電動機要目表（2行既入力・残は空欄で追加可）">
+              <EditTable cols={['用途','台数','電圧(V)','出力(kW)','極数','定格','形式','始動方法','備考']} rows={motorRows} onRowsChange={setMotorRows} sectionable />
+            </Card>
+            <Card title="(5-2) 集合始動器盤組込補機（左列・右列で入力）">
+              <EditTable cols={['補機名①','補機名②']} rows={starterRows} onRowsChange={setStarterRows} />
+            </Card>
+            <div style={S.navAct}><button className="btn-nav" style={S.btnNav} onClick={()=>goto(3)}>← 前へ</button><button className="btn-nav" style={S.btnNav} onClick={()=>goto(5)}>次へ →</button></div>
+          </div>}
+
+          {/* ===== 5: 小形電気機器・航海灯 ===== */}
+          {cur===5 && <div>
+            <div style={S.secH}><span style={S.num}>６</span>小形電気機器・航海灯</div>
+            <div style={S.note}>7-2〜7-4は定型文です。小形電気機器と航海灯の仕様を編集できます。</div>
+            <Card title="(6) 小形電気機器一覧（5行既入力・残は空欄で追加可）">
+              <EditTable cols={['品名','数量','要目','装備場所']} rows={smallEquipRows} onRowsChange={setSmallEquipRows} sectionable />
+            </Card>
+            <Card title="(7-1) 航海灯要目（メーカー：伊吹㈱）">
+              <EditTable cols={['灯種','種別・規格','電源','数量']} rows={navLightRows} onRowsChange={setNavLightRows} />
+            </Card>
+            <div style={S.navAct}><button className="btn-nav" style={S.btnNav} onClick={()=>goto(4)}>← 前へ</button><button className="btn-nav" style={S.btnNav} onClick={()=>goto(6)}>次へ →</button></div>
+          </div>}
+
+          {/* ===== 6: 照明電灯装置 ===== */}
+          {cur===6 && <div>
+            <div style={S.secH}><span style={S.num}>８</span>照明電灯装置</div>
+            <div style={S.note}>8-1〜8-2・8-4〜8-9は定型文です。8-3投光器を編集できます。8-8一般照明電灯は別紙一覧表参照。</div>
+            <Card title="(8-3) 投光器仕様">
+              <EditTable cols={['設置場所','出力(W)','台数','種別']} rows={projectorRows} onRowsChange={setProjectorRows} />
+            </Card>
+            <div style={S.navAct}><button className="btn-nav" style={S.btnNav} onClick={()=>goto(5)}>← 前へ</button><button className="btn-nav" style={S.btnNav} onClick={()=>goto(7)}>次へ →</button></div>
+          </div>}
+
+          {/* ===== 7: 船内通信・計器① ===== */}
+          {cur===7 && <div>
+            <div style={S.secH}><span style={S.num}>９①</span>船内通信・計器①</div>
+            <div style={S.note}>9-2〜9-4・9-6〜9-8は定型文です。船内電話・レーダー・スピーカーを編集できます。</div>
+            <Card title="(9-1) 船内電話">
+              <EditTable cols={['種別','台数','設置場所']} rows={phoneRows} onRowsChange={setPhoneRows} />
+            </Card>
+            <Card title="(9-5) レーダー要目">
+              <EditTable cols={['型','型式','台数','指示器','尖頭出力','空中線']} rows={radarRows} onRowsChange={setRadarRows} />
+            </Card>
+            <Card title="(9-9) 船内指令装置スピーカー配置">
+              <EditTable cols={['設置場所','台数','出力(W)','形式']} rows={speakerRows} onRowsChange={setSpeakerRows} />
+            </Card>
+            <div style={S.navAct}><button className="btn-nav" style={S.btnNav} onClick={()=>goto(6)}>← 前へ</button><button className="btn-nav" style={S.btnNav} onClick={()=>goto(8)}>次へ →</button></div>
+          </div>}
+
+          {/* ===== 8: 船内通信・計器② ===== */}
+          {cur===8 && <div>
+            <div style={S.secH}><span style={S.num}>９②</span>船内通信・計器②</div>
+            <div style={S.note}>9-10〜9-14・9-16〜9-23は定型文です（ジャイロ・オートパイロット・風向風速計・磁気コンパス・警報装置・測深器・監視装置等）。テレビ仕様を編集できます。</div>
+            <Card title="(9-15) テレビ">
+              <EditTable cols={['設置場所','仕様','台数']} rows={tvRows} onRowsChange={setTvRows} />
+            </Card>
+            <div style={S.navAct}><button className="btn-nav" style={S.btnNav} onClick={()=>goto(7)}>← 前へ</button><button className="btn-nav" style={S.btnNav} onClick={()=>goto(9)}>次へ →</button></div>
+          </div>}
+
+          {/* ===== 9: 無線装置 ===== */}
+          {cur===9 && <div>
+            <div style={S.secH}><span style={S.num}>１０</span>無線装置</div>
+            <div style={S.note}>10-1衛星船舶電話・10-2簡易無線は定型文です。GMDSS機器一覧を編集できます。</div>
+            <Card title="(10-3) GMDSS機器一覧">
+              <EditTable cols={['機器名','型式','台数']} rows={gmdsRows} onRowsChange={setGmdsRows} />
+            </Card>
+            <div style={S.navAct}><button className="btn-nav" style={S.btnNav} onClick={()=>goto(8)}>← 前へ</button><button className="btn-nav" style={S.btnNav} onClick={()=>goto(10)}>次へ →</button></div>
+          </div>}
+
+          {/* ===== 10: 自動化・備品・塗装 ===== */}
+          {cur===10 && <div>
+            <div style={S.secH}><span style={S.num}>１１〜１３</span>自動化・備品・塗装</div>
+            <div style={S.note}>11章（機関部自動化・警報装置）・12章（備品・予備品）・13章（塗装）はすべて定型文です。編集項目はありません。</div>
+            <Card title="11〜13章の内容（定型文）">
+              <p style={{fontSize:12,color:'#374151',lineHeight:1.7}}>
+                <b>11章 機関部自動化及び警報装置：</b>主機関遠隔操縦装置・機関部自動化及び警報装置一式を装備。自動化仕様書による。<br/>
+                <b>12章 備品及び予備品：</b>メーカー標準予備品を装備。蓄電池保守要具等は造船所標準。<br/>
+                <b>13章 塗装：</b>マンセル記号 7.5BG 7/2 を標準塗装色とする。
+              </p>
+            </Card>
+            <div style={S.navAct}><button className="btn-nav" style={S.btnNav} onClick={()=>goto(9)}>← 前へ</button><button className="btn-nav" style={S.btnNav} onClick={()=>goto(11)}>次へ →</button></div>
+          </div>}
+
+          {/* ===== 11: 試験・図書 ===== */}
+          {cur===11 && <div>
+            <div style={S.secH}><span style={S.num}>１４〜１５</span>試験・図書</div>
+            <div style={S.note}>14章（試験及び検査）は定型文です。15章（図書目録）を編集できます。</div>
+            <Card title="(15-2) 図書目録（2行既入力・残は空欄で追加可）">
+              <EditTable cols={['図面名称','承認図(船主)','承認図(JG)','完成図(船主)','完成図(本船)']} rows={docListRows} onRowsChange={setDocListRows} />
+            </Card>
+            <div style={S.navAct}><button className="btn-nav" style={S.btnNav} onClick={()=>goto(10)}>← 前へ</button><button className="btn-nav" style={S.btnNav} onClick={()=>goto(12)}>次へ →</button></div>
+          </div>}
+
+          {/* ===== 12: 確認・生成 ===== */}
+          {cur===12 && <div>
             <div style={S.secH}><span style={S.num}>確</span>確認・生成</div>
-            <div style={S.note}>現在は1〜3章（一般・配線・電源装置）のみ生成対象です。残りの章は今後追加予定です。</div>
+            <div style={S.note}>1〜15章すべての内容（定型文＋編集データ）を含むWord仕様書を生成します。</div>
             <Card title="入力内容の確認">
               <p style={{fontSize:12,color:'#374151'}}>船名：{d.ship_name || '（未入力）'}　／　工事番号：{d.project_no || '（未入力）'}</p>
             </Card>
@@ -184,7 +427,7 @@ export default function ElectricalApp() {
               </button>
               <p style={{marginTop:10,fontSize:11,color:'#888'}}>ボタンを押すと自動でダウンロードが始まります</p>
             </div>
-            <div style={S.navAct}><button className="btn-nav" style={S.btnNav} onClick={()=>goto(2)}>← 前へ</button><div /></div>
+            <div style={S.navAct}><button className="btn-nav" style={S.btnNav} onClick={()=>goto(11)}>← 前へ</button><div /></div>
           </div>}
 
         </main>
