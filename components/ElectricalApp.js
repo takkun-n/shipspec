@@ -81,16 +81,48 @@ const initChargerRows = [
   {type:'normal',cells:['充電方式','浮動充電']},
 ];
 
-// 5章: 動力装置 - 電動機要目表
+// 5章: 動力装置 - 電動機要目表（機関部）
+// 注：用途名は文字化けのため空欄。原本（p.10）を参照して入力してください。
 const initMotorRows = [
-  {type:'normal',cells:['主空気圧縮機','２','440','5.5','6','連続','全閉外扇','全電圧','AST']},
-  {type:'normal',cells:['消防兼ビルジポンプ','２','440','22','4','連続','全閉外扇','スターデルタ','LSW,RSW']},
-  {type:'normal',cells:['','','','','','','','','']},
-  {type:'normal',cells:['','','','','','','','','']},
-  {type:'normal',cells:['','','','','','','','','']},
-  {type:'normal',cells:['','','','','','','','','']},
-  {type:'normal',cells:['','','','','','','','','']},
-  {type:'normal',cells:['','','','','','','','','']},
+  {type:'normal',cells:['主空気圧縮機','2','440','5.5','6','連続','全閉外扇','全電圧','AST']},
+  {type:'normal',cells:['消防兼ビルジポンプ','2','440','22','4','連続','全閉外扇','スターデルタ','LSW,RSW']},
+  {type:'normal',cells:['','1','440','11','4','連続','全閉外扇','スターデルタ','LSW,LVR']},
+  {type:'normal',cells:['','1','440','11','6','連続','全閉外扇','スターデルタ','LSW']},
+  {type:'normal',cells:['','1','440','0.4','4','連続','全閉外扇','','']},
+  {type:'normal',cells:['','2','440','0.75','6','連続','全閉外扇','','AST,ES2,LSW']},
+  {type:'normal',cells:['','2','440','0.4','6','連続','全閉外扇','','LSW,LVR,ES2']},
+  {type:'normal',cells:['','1','440','0.4','6','連続','全閉外扇','','LSW,LVR,ES2']},
+  {type:'normal',cells:['','1','440','15','6','連続','全閉外扇','スターデルタ','LSW']},
+  {type:'normal',cells:['','1','440','0.4','4','連続','全閉外扇','','ES2']},
+  {type:'normal',cells:['ヒーター','1','440','10','','連続','','','ES2']},
+  {type:'normal',cells:['','1','440','0.4','4','連続','全閉外扇','','ES2']},
+  {type:'normal',cells:['','2','440','11','4','連続','全閉外扇','','']},
+  {type:'normal',cells:['','2','440','3.7','4','連続','全閉外扇','','']},
+  {type:'normal',cells:['','2','200','0.4','2','連続','全閉外扇','防爆保護','AST']},
+  {type:'normal',cells:['ターニングモーター','1','440','0.4','','連続','全閉外扇','全電圧','RSW']},
+  {type:'normal',cells:['','1','440','0.8','4','30分','','','RSW']},
+  {type:'normal',cells:['機関室通風機','2','440','3.7','4','連続','可逆','','ES2']},
+];
+
+// 5章: 動力装置 - 電動機要目表（甲板部）
+// 注：用途名は文字化けのため空欄。原本（p.11）を参照して入力してください。
+const initDeckMotorRows = [
+  {type:'normal',cells:['','1','440','37','4','連続','全閉外扇','スターデルタ','RSW']},
+  {type:'normal',cells:['','1','440','30','4','連続','全閉外扇','スターデルタ','RSW']},
+  {type:'normal',cells:['操舵機','2','440','5.5','4','連続','全閉外扇','全電圧','LVR']},
+  {type:'normal',cells:['','4','200','1.9','4','連続','全閉外扇','','']},
+  {type:'normal',cells:['サイドスラスター','1','440','205','4','30分','','スターデルタ','RSW']},
+  {type:'normal',cells:['','1','440','0.75','4','連続','全閉外扇','全電圧','RSW']},
+  {type:'normal',cells:['','1','440','0.2','4','連続','全閉外扇','','ES3']},
+  {type:'normal',cells:['','1','440','0.4','4','連続','全閉外扇','','Es1']},
+  {type:'normal',cells:['','1','440','2.2','6','連続','全閉外扇','','RSW,ES1']},
+  {type:'normal',cells:['ガスフリーファン','2','440','30','2','連続','全閉外扇','コンペラ式','ES1,RSW']},
+  {type:'normal',cells:['残油ポンプ','2','440','22','4','連続','全閉外扇','スターデルタ','ES2']},
+  {type:'normal',cells:['','1','440','0.4','4','連続','全閉外扇','全電圧','ES2']},
+  {type:'normal',cells:['','1','220','5.5','','連続','全閉外扇','全電圧','PT.']},
+  {type:'normal',cells:['','1','440','0.4','4','連続','全閉外扇','全電圧','ES2']},
+  {type:'normal',cells:['バラストポンプ','1','440','22','4','連続','全閉外扇','スターデルタ','']},
+  {type:'normal',cells:['','1','440','3','','','','','ES2']},
 ];
 
 // 5章: 集合始動器盤組込補機リスト
@@ -210,6 +242,7 @@ export default function ElectricalApp() {
   const [routeRows, setRouteRows] = useState(initRouteRows);
   const [chargerRows, setChargerRows] = useState(initChargerRows);
   const [motorRows, setMotorRows] = useState(initMotorRows);
+  const [deckMotorRows, setDeckMotorRows] = useState(initDeckMotorRows);
   const [starterRows, setStarterRows] = useState(initStarterRows);
   const [smallEquipRows, setSmallEquipRows] = useState(initSmallEquipRows);
   const [navLightRows, setNavLightRows] = useState(initNavLightRows);
@@ -227,7 +260,7 @@ export default function ElectricalApp() {
       ...d,
       genRows, genUseRows, battRows, transRows,
       voltRows, wireRows, routeRows,
-      chargerRows, motorRows, starterRows,
+      chargerRows, motorRows, deckMotorRows, starterRows,
       smallEquipRows, navLightRows, projectorRows,
       phoneRows, radarRows, speakerRows, tvRows,
       gmdsRows, docListRows,
@@ -322,8 +355,11 @@ export default function ElectricalApp() {
           {cur===4 && <div>
             <div style={S.secH}><span style={S.num}>５</span>動力装置</div>
             <div style={S.note}>5-3非常停止装置・5-4自動制御は定型文です。電動機要目表と始動器盤組込補機リストを編集できます。</div>
-            <Card title="(5-1) 電動機要目表（2行既入力・残は空欄で追加可）">
+            <Card title="(5-1) 電動機要目表【機関部】（用途名は原本p.10を参照して入力）">
               <EditTable cols={['用途','台数','電圧(V)','出力(kW)','極数','定格','形式','始動方法','備考']} rows={motorRows} onRowsChange={setMotorRows} sectionable />
+            </Card>
+            <Card title="(5-1) 電動機要目表【甲板部】（用途名は原本p.11を参照して入力）">
+              <EditTable cols={['用途','台数','電圧(V)','出力(kW)','極数','定格','形式','始動方法','備考']} rows={deckMotorRows} onRowsChange={setDeckMotorRows} sectionable />
             </Card>
             <Card title="(5-2) 集合始動器盤組込補機（左列・右列で入力）">
               <EditTable cols={['補機名①','補機名②']} rows={starterRows} onRowsChange={setStarterRows} />
