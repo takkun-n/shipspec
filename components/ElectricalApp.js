@@ -40,6 +40,37 @@ const initTransRows = [
   {type:'normal',cells:['組込場所','機関室','機関室']},
 ];
 
+const initVoltRows = [
+  {type:'normal',cells:['１）動力装置','ＡＣ ４４０Ｖ','60Hz','絶縁三相三線式']},
+  {type:'normal',cells:['','ＡＣ ２２０Ｖ','60Hz','絶縁三相三線式']},
+  {type:'normal',cells:['２）照明装置及び小型電気機器','ＡＣ １００Ｖ','60Hz','絶縁単相二線式']},
+  {type:'normal',cells:['３）通信及び航海計器装置','ＡＣ ４４０Ｖ','60Hz','絶縁三相三線式']},
+  {type:'normal',cells:['','ＡＣ １００Ｖ','60Hz','絶縁単相二線式']},
+  {type:'normal',cells:['','ＤＣ ２４Ｖ','－','絶縁二線式']},
+];
+
+const initWireRows = [
+  {type:'normal',cells:['１）発電機','0.6/1KV ＥＰゴム絶縁ビニルシースあじろがい装ケーブル（ＴＰＹＣ・ＭＰＹＣ・ＤＰＹＣ）']},
+  {type:'normal',cells:['２）電動機・電熱器等','0.6/1KV ＥＰゴム絶縁ビニルシースあじろがい装ケーブル（ＴＰＹＣ）']},
+  {type:'normal',cells:['３）照明灯・航海灯・蓄電池','0.6/1KV ＥＰゴム絶縁ビニルシースあじろがい装ケーブル（ＴＰＹＣ）（ＤＰＹＣ）（ＤＰＹ）（ＴＰＹ）']},
+  {type:'normal',cells:['４）通信機器','250V ＥＰゴム絶縁ビニルシースあじろがい装ケーブル（ＴＰＹＣ）（ＤＰＹＣ）（ＤＰＹ）（ＴＰＹ）']},
+  {type:'normal',cells:['５）移動灯具','250V ＥＰゴム絶縁クロロプレンキャブタイヤコード（ＤＰＹ）']},
+  {type:'normal',cells:['６）前部マスト・レーダーマスト','ビニールがい装ケーブル（ＤＰＹＣＹ）']},
+];
+
+const initRouteRows = [
+  {type:'normal',cells:['1','一般に主要電路のケーブルは金属ハンガーで布設し、できる限り背後の金属構造物への塗装を妨げないように布設する。']},
+  {type:'normal',cells:['2','居住区内張内木壁部に直接布設する。']},
+  {type:'normal',cells:['3','暴露部の押さえバンドはＳＵＳとする。']},
+  {type:'normal',cells:['4','すべてのケーブルは金属性帯金又は結束バンドで固定する。']},
+  {type:'normal',cells:['5','ケーブルが水密隔壁又は甲板を貫通する場合には、電線貫通金物又は防水形電線貫通箱を使用する。']},
+  {type:'normal',cells:['6','ケーブルは、水・油又は温水管などの高温部から特に注意してできる限り離して布設し、機械的損傷を受け易い場所に布設する場合は、鋼板・鋼管又は防水形フレキシブルチューブを使用してケーブルを保護する。']},
+  {type:'normal',cells:['7','船尾から船首への配線は甲板上に布設する。']},
+  {type:'normal',cells:['8','電線の先端処理は十分に留意して行い、電線の接続及び分岐は接続箱又は端子箱などで行う。']},
+  {type:'normal',cells:['9','接地工事は十分な施工をする。']},
+  {type:'normal',cells:['10','各分電盤に予備のブレーカーを設備する。']},
+];
+
 export default function ElectricalApp() {
   const [cur, setCur] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -57,10 +88,13 @@ export default function ElectricalApp() {
   const [genUseRows, setGenUseRows] = useState(initGenUseRows);
   const [battRows, setBattRows] = useState(initBattRows);
   const [transRows, setTransRows] = useState(initTransRows);
+  const [voltRows, setVoltRows] = useState(initVoltRows);
+  const [wireRows, setWireRows] = useState(initWireRows);
+  const [routeRows, setRouteRows] = useState(initRouteRows);
 
   const generate = async () => {
     setLoading(true);
-    const payload = { ...d, genRows, genUseRows, battRows, transRows };
+    const payload = { ...d, genRows, genUseRows, battRows, transRows, voltRows, wireRows, routeRows };
     try {
       const res = await fetch('/api/generateElectrical', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
       if (!res.ok) throw new Error(await res.text());
@@ -103,9 +137,18 @@ export default function ElectricalApp() {
           {/* ===== 1: 一般・配線 ===== */}
           {cur===1 && <div>
             <div style={S.secH}><span style={S.num}>１</span>一般・配線</div>
-            <div style={S.note}>1.一般・2.配線は定型文を使用します。船級のみ編集可能です。</div>
+            <div style={S.note}>1-1（設計方針）は定型文です。1-2（船級）と2-1〜2-3（配線）は以下で編集できます。</div>
             <Card title="(1-2) 船級">
               <Row><FG label="船級"><Input value={d.e_class} onChange={set('e_class')} placeholder="例：ＪＧ" /></FG><div /></Row>
+            </Card>
+            <Card title="(2-1) 電圧及び配電方式（行の追加・削除可）">
+              <EditTable cols={['区分','電圧','周波数','配電方式']} rows={voltRows} onRowsChange={setVoltRows} />
+            </Card>
+            <Card title="(2-2) 使用電線（行の追加・削除可）">
+              <EditTable cols={['区分','電線種別・規格']} rows={wireRows} onRowsChange={setWireRows} />
+            </Card>
+            <Card title="(2-3) 電路・配線工事（行の追加・削除可）">
+              <EditTable cols={['番号','施工内容']} rows={routeRows} onRowsChange={setRouteRows} />
             </Card>
             <div style={S.navAct}><button className="btn-nav" style={S.btnNav} onClick={()=>goto(0)}>← 前へ</button><button className="btn-nav" style={S.btnNav} onClick={()=>goto(2)}>次へ →</button></div>
           </div>}
