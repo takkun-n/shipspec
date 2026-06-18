@@ -168,6 +168,36 @@ const initProjectorRows = [
   {type:'normal',cells:['機関室','300','１台','ＬＥＤ灯']},
 ];
 
+// 8章: 一般照明電灯装備一覧表（場所名は元ファイルp.XX参照のため空欄）
+// 列: 場所, シーリング, 外部通路灯, 浴室灯, 階段灯, 機器灯, 補助灯, 持ち灯, 防灯, 非常灯(DC), 設記
+const initLightingRows = [
+  {type:'normal',cells:['','','','','','','','','','','']},
+  {type:'normal',cells:['','','','','','','','','','','']},
+  {type:'normal',cells:['','','','','','','','','','','']},
+  {type:'normal',cells:['','','','','','','','','','','']},
+  {type:'normal',cells:['','','','','','','','','','','']},
+  {type:'normal',cells:['','','','','','','','','','','']},
+  {type:'normal',cells:['','','','','','','','','','','']},
+  {type:'normal',cells:['','','','','','','','','','','']},
+  {type:'normal',cells:['','','','','','','','','','','']},
+  {type:'normal',cells:['','','','','','','','','','','']},
+  {type:'normal',cells:['','','','','','','','','','','']},
+  {type:'normal',cells:['','','','','','','','','','','']},
+  {type:'normal',cells:['','','','','','','','','','','']},
+  {type:'normal',cells:['','','','','','','','','','','']},
+  {type:'normal',cells:['','','','','','','','','','','']},
+  {type:'normal',cells:['','','','','','','','','','','']},
+  {type:'normal',cells:['','','','','','','','','','','']},
+  {type:'normal',cells:['','','','','','','','','','','']},
+  {type:'normal',cells:['','','','','','','','','','','']},
+  {type:'normal',cells:['','','','','','','','','','','']},
+  {type:'normal',cells:['','','','','','','','','','','']},
+  {type:'normal',cells:['','','','','','','','','','','']},
+  {type:'normal',cells:['','','','','','','','','','','']},
+  {type:'normal',cells:['','','','','','','','','','','']},
+  {type:'normal',cells:['','','','','','','','','','','']},
+];
+
 // 9章: 船内電話
 const initPhoneRows = [
   {type:'normal',cells:['一般','10台','居室(8)・食堂・荷役監視室兼事務室']},
@@ -247,6 +277,7 @@ export default function ElectricalApp() {
   const [smallEquipRows, setSmallEquipRows] = useState(initSmallEquipRows);
   const [navLightRows, setNavLightRows] = useState(initNavLightRows);
   const [projectorRows, setProjectorRows] = useState(initProjectorRows);
+  const [lightingRows, setLightingRows] = useState(initLightingRows);
   const [phoneRows, setPhoneRows] = useState(initPhoneRows);
   const [radarRows, setRadarRows] = useState(initRadarRows);
   const [speakerRows, setSpeakerRows] = useState(initSpeakerRows);
@@ -261,7 +292,7 @@ export default function ElectricalApp() {
       genRows, genUseRows, battRows, transRows,
       voltRows, wireRows, routeRows,
       chargerRows, motorRows, deckMotorRows, starterRows,
-      smallEquipRows, navLightRows, projectorRows,
+      smallEquipRows, navLightRows, projectorRows, lightingRows,
       phoneRows, radarRows, speakerRows, tvRows,
       gmdsRows, docListRows,
     };
@@ -383,9 +414,13 @@ export default function ElectricalApp() {
           {/* ===== 6: 照明電灯装置 ===== */}
           {cur===6 && <div>
             <div style={S.secH}><span style={S.num}>８</span>照明電灯装置</div>
-            <div style={S.note}>8-1〜8-2・8-4〜8-9は定型文です。8-3投光器を編集できます。8-8一般照明電灯は別紙一覧表参照。</div>
+            <div style={S.note}>8-1〜8-2・8-4〜8-7は定型文です。8-3投光器・8-8一般照明電灯装備一覧表・8-9プラグを編集できます。</div>
             <Card title="(8-3) 投光器仕様">
               <EditTable cols={['設置場所','出力(W)','台数','種別']} rows={projectorRows} onRowsChange={setProjectorRows} />
+            </Card>
+            <Card title="(8-8) 一般照明電灯装備一覧表">
+              <div style={{fontSize:'12px',color:'#666',marginBottom:'6px'}}>場所名は元ファイル参照。設記欄：N=丸形、S=角形、T=防工形、U=防雨形</div>
+              <EditTable cols={['場所','シーリング','外部通路灯','浴室灯','階段灯','機器灯','補助灯','持ち灯','防灯','非常灯(DC)','設記']} rows={lightingRows} onRowsChange={setLightingRows} sectionable />
             </Card>
             <div style={S.navAct}><button className="btn-nav" style={S.btnNav} onClick={()=>goto(5)}>← 前へ</button><button className="btn-nav" style={S.btnNav} onClick={()=>goto(7)}>次へ →</button></div>
           </div>}
